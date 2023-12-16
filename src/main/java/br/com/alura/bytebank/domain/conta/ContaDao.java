@@ -8,8 +8,6 @@ import java.sql.SQLException;
 import java.util.HashSet;
 import java.util.Set;
 
-import javax.management.RuntimeErrorException;
-
 import br.com.alura.bytebank.domain.cliente.Cliente;
 import br.com.alura.bytebank.domain.cliente.DadosCadastroCliente;
 
@@ -23,7 +21,7 @@ public class ContaDao {
 	
 	public void salvar(DadosAberturaConta dadosDaConta) {
         var cliente = new Cliente(dadosDaConta.dadosCliente());
-        var conta = new Conta(dadosDaConta.numero(), cliente);
+        var conta = new Conta(dadosDaConta.numero(), BigDecimal.ZERO, cliente);
         
         String sql = "INSERT INTO conta(numero, saldo, cliente_nome, cliente_cpf, cliente_email)"
         		+ "VALUES(?, ?, ?, ?, ?)";
@@ -65,7 +63,7 @@ public class ContaDao {
 				DadosCadastroCliente dadosCadastroCliente = new DadosCadastroCliente(nome, cpf, email);
 				Cliente cliente = new Cliente(dadosCadastroCliente);
 				
-				contas.add(new Conta(numero, cliente));
+				contas.add(new Conta(numero, saldo, cliente));
 			}
 			resultSet.close();
             ps.close();
@@ -89,6 +87,21 @@ public class ContaDao {
 			ps.execute();
 			ps.close();
 			conn.close();
+		}catch(SQLException e) {
+			throw new RuntimeException(e);
+		}
+	}
+	
+	public void deletar(Integer numeroDaConta) {
+		String sql = "DELETE FROM conta WHERE numero = ?";
+
+		try {
+			PreparedStatement ps = conn.prepareStatement(sql);
+			
+			ps.setInt(1, numeroDaConta);
+			
+			ps.execute();
+			ps.close();
 		}catch(SQLException e) {
 			throw new RuntimeException(e);
 		}
